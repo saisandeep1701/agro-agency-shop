@@ -1,0 +1,11 @@
+.content-container {
+  background-image: url('/agriculture-field-grain-5980.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+.feature-icon {
+  width: 4rem;
+  height: 4rem;
+  border-radius: .75rem;
+}
