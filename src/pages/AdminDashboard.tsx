@@ -18,9 +18,12 @@ const AdminDashboard: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
+            const token = localStorage.getItem('adminToken');
             const [productsRes, ordersRes] = await Promise.all([
                 fetch(`${API_BASE_URL}/api/products`),
-                fetch(`${API_BASE_URL}/api/orders`)
+                fetch(`${API_BASE_URL}/api/orders`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
             ]);
 
             if (!productsRes.ok || !ordersRes.ok) {
@@ -48,9 +51,13 @@ const AdminDashboard: React.FC = () => {
         };
 
         try {
+            const token = localStorage.getItem('adminToken');
             const response = await fetch(`${API_BASE_URL}/api/products/${productId}/stock`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify(adjustment)
             });
 
