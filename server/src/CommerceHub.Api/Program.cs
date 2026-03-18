@@ -52,6 +52,7 @@ builder.Services.AddSingleton<IEventPublisher, RabbitMqEventPublisher>();
 // ---------------------------------------------------------------------------
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 
 // ---------------------------------------------------------------------------
 // Validation (registers all validators from this assembly)
@@ -99,6 +100,8 @@ var app = builder.Build();
 // Middleware Pipeline
 // ---------------------------------------------------------------------------
 app.UseMiddleware<GlobalExceptionMiddleware>();
+
+app.UseStaticFiles();
 
 app.UseCors("AllowFrontend");
 

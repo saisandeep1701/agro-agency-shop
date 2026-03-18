@@ -11,13 +11,16 @@ namespace CommerceHub.Api.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly IProductService _productService;
+    private readonly IFileStorageService _fileStorageService;
     private readonly IValidator<StockAdjustmentDto> _stockValidator;
 
     public ProductsController(
         IProductService productService,
+        IFileStorageService fileStorageService,
         IValidator<StockAdjustmentDto> stockValidator)
     {
         _productService = productService;
+        _fileStorageService = fileStorageService;
         _stockValidator = stockValidator;
     }
 
@@ -30,6 +33,40 @@ public class ProductsController : ControllerBase
     {
         var result = await _productService.GetAllAsync();
         return Ok(result.Data);
+    }
+
+    /// <summary>
+    /// Creates a new product cataloging optional environment photo uploads securely natively mapped into FileStorageService routing endpoints!
+    /// </summary>
+    [Authorize]
+    [HttpPost]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    public async Task<IActionResult> Create([FromForm] CreateProductDto request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        string? photoUrl = null;
+        if (request.PhotoFile != null)
+        {
+            photoUrl = await _fileStorageService.SaveFileAsync(request.PhotoFile, "products");
+        }
+
+        var product = new CommerceHub.Api.Models.Product
+        {
+            Name = request.Name,
+            Sku = request.Sku,
+            Description = request.Description ?? string.Empty,
+            Stock = request.Stock,
+            Price = request.Price,
+            TechnicalName = request.TechnicalName,
+            ExpiryDate = request.ExpiryDate,
+            PhotoUrl = photoUrl
+        };
+
+        var result = await _productService.CreateAsync(product);
+        return Created($"/api/products/{result.Data!.Id}", result.Data);
     }
 
     /// <summary>

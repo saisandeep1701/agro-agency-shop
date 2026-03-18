@@ -21,6 +21,13 @@ public class ProductService : IProductService
         return ServiceResult<IEnumerable<Product>>.Ok(products);
     }
 
+    public async Task<ServiceResult<Product>> CreateAsync(Product product)
+    {
+        var created = await _productRepository.CreateAsync(product);
+        _logger.LogInformation("Product {ProductId} successfully created securely mapping Form bytes.", created.Id);
+        return ServiceResult<Product>.Ok(created);
+    }
+
     public async Task<ServiceResult<Product>> AdjustStockAsync(string productId, StockAdjustmentDto request)
     {
         // First check if product exists to give a useful error

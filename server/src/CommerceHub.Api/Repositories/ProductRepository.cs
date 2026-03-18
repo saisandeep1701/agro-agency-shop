@@ -24,6 +24,12 @@ public class ProductRepository : IProductRepository
         return await _products.Find(p => p.Id == id).FirstOrDefaultAsync();
     }
 
+    public async Task<Product> CreateAsync(Product product)
+    {
+        await _products.InsertOneAsync(product);
+        return product;
+    }
+
     /// <summary>
     /// Atomic stock decrement using findOneAndUpdate with a guard condition.
     /// The filter ensures we only match if Stock >= quantity, preventing negative stock.

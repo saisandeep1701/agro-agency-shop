@@ -149,13 +149,15 @@ const ProductGrid: React.FC<ProductGridProps> = ({ searchQuery, onAddToCart }) =
                         <div className="col" key={product.id}>
                             <div className={`card h-100 shadow-sm text-bg-dark border-secondary`}>
                                 <div className="card-body">
-                                    <div className="d-flex justify-content-between align-items-center mb-2">
-                                        <h5 className="card-title mb-0 text-light">
+                                    <div className="d-flex justify-content-between align-items-center mb-0">
+                                        <h5 className="card-title mb-0 text-light fw-bold">
                                             {product.name}
                                         </h5>
                                         <span className="badge rounded-pill text-bg-secondary shadow-sm">ID: {product.id.substring(0, 8)}</span>
                                     </div>
-                                    <p className="card-text text-light">{product.description || 'No description available for this item.'}</p>
+                                    {product.technicalName && <div className="text-secondary mb-2 fst-italic" style={{ fontSize: '0.85rem' }}>{product.technicalName}</div>}
+                                    {!product.technicalName && <div className="mb-2"></div>}
+                                    <p className="card-text text-light mt-2">{product.description || 'No description available for this item.'}</p>
                                     <div className="d-flex justify-content-between mt-3">
                                         <span className={`${stockClass} fw-bold`}>{stockText}</span>
                                         <span className="fw-bold text-light">${product.price || '0.00'}</span>

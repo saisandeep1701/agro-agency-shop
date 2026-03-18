@@ -1,15 +1,16 @@
+/* Global Body Defaults for the "Dark Contrast" Aesthetic */
 body {
-    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=1920&auto=format&fit=crop') no-repeat center center fixed;
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('http://googleusercontent.com/image_collection/image_retrieval/12228439594266409810_0') no-repeat center center fixed;
     background-size: cover;
     min-height: 100vh;
-    color: white;
+    color: white; /* Default text color mapping to light reading */
 }
 
-.feature, .card, .container {
-    background: rgba(0, 0, 0, 0.6) !important;
+/* Glassmorphism Styles (Slightly deepened for white contrast) */
+.feature {
+    background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
 }
 

@@ -21,6 +21,18 @@ public class Product
     [BsonElement("price")]
     public decimal Price { get; set; }
 
+    [BsonElement("technicalName")]
+    [BsonIgnoreIfNull]
+    public string? TechnicalName { get; set; }
+
+    [BsonElement("expiryDate")]
+    [BsonIgnoreIfNull]
+    public DateTime? ExpiryDate { get; set; }
+
+    [BsonElement("photoUrl")]
+    [BsonIgnoreIfNull]
+    public string? PhotoUrl { get; set; }
+
     [BsonElement("updatedAt")]
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

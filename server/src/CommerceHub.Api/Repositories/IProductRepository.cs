@@ -15,6 +15,11 @@ public interface IProductRepository
     Task<Product?> GetByIdAsync(string id);
 
     /// <summary>
+    /// Inserts a newly uploaded Product object.
+    /// </summary>
+    Task<Product> CreateAsync(Product product);
+
+    /// <summary>
     /// Atomically decrements stock for a product. Returns the updated product if
     /// sufficient stock was available, or null if stock was insufficient or product not found.
     /// Uses MongoDB findOneAndUpdate with a conditional filter (stock >= quantity).

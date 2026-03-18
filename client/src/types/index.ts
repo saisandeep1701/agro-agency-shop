@@ -5,6 +5,9 @@ export interface Product {
     description: string;
     stock: number;
     price: number;
+    technicalName?: string;
+    expiryDate?: string;
+    photoUrl?: string;
 }
 
 export interface CartItem {

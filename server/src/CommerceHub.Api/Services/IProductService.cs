@@ -7,4 +7,5 @@ public interface IProductService
 {
     Task<ServiceResult<IEnumerable<Product>>> GetAllAsync();
     Task<ServiceResult<Product>> AdjustStockAsync(string productId, StockAdjustmentDto request);
+    Task<ServiceResult<Product>> CreateAsync(Product product);
 }
