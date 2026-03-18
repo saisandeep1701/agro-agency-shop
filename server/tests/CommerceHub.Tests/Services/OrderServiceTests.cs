@@ -3,6 +3,7 @@ using CommerceHub.Api.Messaging;
 using CommerceHub.Api.Models;
 using CommerceHub.Api.Repositories;
 using CommerceHub.Api.Services;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
@@ -16,6 +17,7 @@ public class OrderServiceTests
     private Mock<IProductRepository> _productRepoMock = null!;
     private Mock<IEventPublisher> _eventPublisherMock = null!;
     private Mock<ILogger<OrderService>> _loggerMock = null!;
+    private Mock<IStringLocalizer<OrderService>> _localizerMock = null!;
     private OrderService _service = null!;
 
     [SetUp]
@@ -25,12 +27,20 @@ public class OrderServiceTests
         _productRepoMock = new Mock<IProductRepository>();
         _eventPublisherMock = new Mock<IEventPublisher>();
         _loggerMock = new Mock<ILogger<OrderService>>();
+        _localizerMock = new Mock<IStringLocalizer<OrderService>>();
+
+        _localizerMock.Setup(l => l[It.IsAny<string>()])
+            .Returns((string key) => new LocalizedString(key, key));
+
+        _localizerMock.Setup(l => l[It.IsAny<string>(), It.IsAny<object[]>()])
+            .Returns((string key, object[] args) => new LocalizedString(key, key));
 
         _service = new OrderService(
             _orderRepoMock.Object,
             _productRepoMock.Object,
             _eventPublisherMock.Object,
-            _loggerMock.Object
+            _loggerMock.Object,
+            _localizerMock.Object
         );
     }
 
@@ -125,7 +135,7 @@ public class OrderServiceTests
         // Assert
         Assert.That(result.Success, Is.False);
         Assert.That(result.StatusCode, Is.EqualTo(409));
-        Assert.That(result.ErrorMessage, Does.Contain("Insufficient stock"));
+        Assert.That(result.ErrorMessage, Is.EqualTo("InsufficientStock"));
 
         // Verify rollback was called for the first product
         _productRepoMock.Verify(r => r.IncrementStockAsync("prod-1", 2), Times.Once);
@@ -165,7 +175,7 @@ public class OrderServiceTests
 
         Assert.That(result.Success, Is.False);
         Assert.That(result.StatusCode, Is.EqualTo(404));
-        Assert.That(result.ErrorMessage, Does.Contain("not found"));
+        Assert.That(result.ErrorMessage, Is.EqualTo("ProductNotFound"));
 
         // Event must NOT be published
         _eventPublisherMock.Verify(
@@ -313,7 +323,7 @@ public class OrderServiceTests
 
         Assert.That(result.Success, Is.False);
         Assert.That(result.StatusCode, Is.EqualTo(409));
-        Assert.That(result.ErrorMessage, Does.Contain("shipped"));
+        Assert.That(result.ErrorMessage, Is.EqualTo("CannotUpdateShippedOrder"));
     }
 
     // -----------------------------------------------------------------------
