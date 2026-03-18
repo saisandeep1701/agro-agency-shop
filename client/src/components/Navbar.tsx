@@ -26,25 +26,25 @@ const Navbar: React.FC<NavbarProps> = ({ setSearchQuery, cartCount }) => {
                             <a className="nav-link active" aria-current="page" href="#">Home</a>
                         </li>
                         <li className="nav-item">
-                            <a className="nav-link text-success fw-bold" href="#green-revolution">Organic & Bio-Inputs</a>
+                            <a className="nav-link text-white fw-bold border border-secondary rounded-pill px-3 ms-2" style={{ background: '#000' }} href="#featured-3">Organic & Bio-Inputs</a>
                         </li>
                         <li className="nav-item">
                             <a className="nav-link" href="#">About</a>
                         </li>
                     </ul>
                     <div className="d-flex align-items-center me-3">
-                        <span className="badge text-bg-success fs-6">🛒 Cart: {cartCount}</span>
+                        <span className="badge bg-dark border border-secondary text-white fs-6">🛒 Cart: {cartCount}</span>
                     </div>
                     <form className="d-flex" role="search" onSubmit={handleSearch}>
                         <input 
-                            className="form-control me-2" 
+                            className="form-control me-2 text-bg-dark border-secondary" 
                             type="search" 
                             placeholder="Product name" 
                             aria-label="Search" 
                             value={localQuery}
                             onChange={(e) => setLocalQuery(e.target.value)}
                         />
-                        <button className="btn btn-outline-success" type="submit">Search</button>
+                        <button className="btn btn-outline-light" type="submit">Search</button>
                     </form>
                 </div>
             </div>

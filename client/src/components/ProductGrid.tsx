@@ -109,7 +109,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({ searchQuery, onAddToCart }) =
                 {['All', 'Pesticides', 'Fertilizers', 'Organic'].map(cat => (
                     <button 
                         key={cat}
-                        className={`btn ${activeCategory === cat ? 'btn-success' : 'btn-outline-success'} rounded-pill px-4 fw-bold`}
+                        className={`btn ${activeCategory === cat ? 'btn-dark border-light text-white' : 'btn-outline-light text-white'} rounded-pill px-4 fw-bold`}
+                        style={activeCategory === cat ? { background: '#000' } : {}}
                         onClick={() => setActiveCategory(cat)}
                     >
                         {cat}
@@ -145,11 +146,11 @@ const ProductGrid: React.FC<ProductGridProps> = ({ searchQuery, onAddToCart }) =
 
                     return (
                         <div className="col" key={product.id}>
-                            <div className={`card h-100 shadow-sm text-bg-dark ${isOrganic ? 'border-success border-2' : 'border-secondary'}`}>
+                            <div className={`card h-100 shadow-sm text-bg-dark border-secondary`}>
                                 <div className="card-body">
-                                    {isOrganic && <div className="text-success fw-bold mb-2">🌱 Bio-Input</div>}
+                                    {isOrganic && <div className="badge bg-dark border border-secondary text-light p-2 mb-2 fs-6">🌱 Bio-Input</div>}
                                     <div className="d-flex justify-content-between align-items-center mb-2">
-                                        <h5 className={`card-title mb-0 ${isOrganic ? 'text-success fw-bold' : 'text-success'}`}>
+                                        <h5 className={`card-title mb-0 ${isOrganic ? 'text-white fw-bold' : 'text-light'}`}>
                                             {product.name}
                                         </h5>
                                         <span className="badge rounded-pill text-bg-secondary shadow-sm">ID: {product.id.substring(0, 8)}</span>
@@ -160,9 +161,10 @@ const ProductGrid: React.FC<ProductGridProps> = ({ searchQuery, onAddToCart }) =
                                         <span className="fw-bold text-light">${product.price || '0.00'}</span>
                                     </div>
                                 </div>
-                                <div className={`card-footer bg-transparent text-center ${isOrganic ? 'border-success' : 'border-secondary'}`}>
+                                <div className={`card-footer bg-transparent text-center border-secondary`}>
                                     <button 
-                                        className="btn btn-outline-success w-100 fw-bold" 
+                                        className="btn btn-dark border-secondary text-white w-100 fw-bold" 
+                                        style={{ background: '#000' }}
                                         onClick={() => buyProduct(product)} 
                                         disabled={product.stock <= 0}
                                     >
