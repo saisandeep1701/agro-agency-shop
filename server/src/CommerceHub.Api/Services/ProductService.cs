@@ -15,6 +15,12 @@ public class ProductService : IProductService
         _logger = logger;
     }
 
+    public async Task<ServiceResult<IEnumerable<Product>>> GetAllAsync()
+    {
+        var products = await _productRepository.GetAllAsync();
+        return ServiceResult<IEnumerable<Product>>.Ok(products);
+    }
+
     public async Task<ServiceResult<Product>> AdjustStockAsync(string productId, StockAdjustmentDto request)
     {
         // First check if product exists to give a useful error

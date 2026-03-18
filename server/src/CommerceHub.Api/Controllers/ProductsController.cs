@@ -22,6 +22,17 @@ public class ProductsController : ControllerBase
     }
 
     /// <summary>
+    /// Gets all products from the catalog safely.
+    /// </summary>
+    [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<CommerceHub.Api.Models.Product>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAll()
+    {
+        var result = await _productService.GetAllAsync();
+        return Ok(result.Data);
+    }
+
+    /// <summary>
     /// Direct inventory adjustment. Atomic operation that prevents negative stock levels.
     /// </summary>
     [Authorize]

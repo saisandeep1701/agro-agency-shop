@@ -26,6 +26,9 @@ const Navbar: React.FC<NavbarProps> = ({ setSearchQuery, cartCount }) => {
                             <a className="nav-link active" aria-current="page" href="#">Home</a>
                         </li>
                         <li className="nav-item">
+                            <a className="nav-link text-success fw-bold" href="#green-revolution">Organic & Bio-Inputs</a>
+                        </li>
+                        <li className="nav-item">
                             <a className="nav-link" href="#">About</a>
                         </li>
                     </ul>

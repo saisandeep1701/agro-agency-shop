@@ -127,7 +127,10 @@ const ProductGrid: React.FC<ProductGridProps> = ({ searchQuery, onAddToCart }) =
                                 <div className="card-body">
                                     <div className="d-flex justify-content-between align-items-center mb-2">
                                         <h5 className="card-title text-success mb-0">{product.name}</h5>
-                                        <span className="badge rounded-pill text-bg-secondary">ID: {product.id.substring(0, 8)}...</span>
+                                        <div>
+                                            {product.name.toLowerCase().includes('organic') && <span className="badge rounded-pill bg-success me-2">Bio-Certified</span>}
+                                            <span className="badge rounded-pill text-bg-secondary">ID: {product.id.substring(0, 8)}...</span>
+                                        </div>
                                     </div>
                                     <p className="card-text">{product.description || 'No description available'}</p>
                                     <p className="card-text"><small className={`${stockClass} fw-bold`}>{stockText}</small></p>

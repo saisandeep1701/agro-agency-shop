@@ -14,6 +14,11 @@ public class ProductRepository : IProductRepository
         _logger = logger;
     }
 
+    public async Task<IEnumerable<Product>> GetAllAsync()
+    {
+        return await _products.Find(_ => true).ToListAsync();
+    }
+
     public async Task<Product?> GetByIdAsync(string id)
     {
         return await _products.Find(p => p.Id == id).FirstOrDefaultAsync();

@@ -5,6 +5,11 @@ namespace CommerceHub.Api.Repositories;
 public interface IProductRepository
 {
     /// <summary>
+    /// Gets all products.
+    /// </summary>
+    Task<IEnumerable<Product>> GetAllAsync();
+
+    /// <summary>
     /// Gets a product by its ID.
     /// </summary>
     Task<Product?> GetByIdAsync(string id);

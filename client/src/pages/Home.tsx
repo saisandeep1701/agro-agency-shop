@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
+import GreenRevolution from '../components/GreenRevolution';
 import Features from '../components/Features';
 import ProductGrid from '../components/ProductGrid';
 import { Product } from '../types';
@@ -17,6 +18,7 @@ const Home: React.FC = () => {
     <>
       <Navbar setSearchQuery={setSearchQuery} cartCount={cartCount} />
       <Hero />
+      <GreenRevolution onAddToCart={handleAddToCart} />
       <ProductGrid searchQuery={searchQuery} onAddToCart={handleAddToCart} />
       <Features />
       
