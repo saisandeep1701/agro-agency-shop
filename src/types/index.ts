@@ -20,3 +20,19 @@ export interface StockAdjustmentDto {
     quantityToAdjust: number;
     reason: string;
 }
+
+export interface OrderItem {
+    productId: string;
+    quantity: number;
+    unitPrice: number;
+}
+
+export interface Order {
+    id: string;
+    customerId: string;
+    items: OrderItem[];
+    status: string;
+    totalAmount: number;
+    createdAt: string;
+    updatedAt: string;
+}
