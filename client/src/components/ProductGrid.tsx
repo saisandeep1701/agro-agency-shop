@@ -90,9 +90,11 @@ const ProductGrid: React.FC<ProductGridProps> = ({ searchQuery, onAddToCart }) =
         return 'Other'; 
     };
 
-    // Unified filtering cascade applying both the active category pill and the global SearchQuery simultaneously
     const displayProducts = products.filter(p => {
-        const matchesCategory = activeCategory === 'All' || getCategory(p) === activeCategory;
+        const category = getCategory(p);
+        if (category === 'Organic') return false;
+
+        const matchesCategory = activeCategory === 'All' || category === activeCategory;
         const matchesSearch = !searchQuery || 
             p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
             (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -106,7 +108,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ searchQuery, onAddToCart }) =
             
             {/* Dynamic Category Pill Filters */}
             <div className="d-flex justify-content-center gap-2 mb-5 mt-4 flex-wrap">
-                {['All', 'Pesticides', 'Fertilizers', 'Organic'].map(cat => (
+                {['All', 'Pesticides', 'Fertilizers'].map(cat => (
                     <button 
                         key={cat}
                         className={`btn ${activeCategory === cat ? 'btn-dark border-light text-white' : 'btn-outline-light text-white'} rounded-pill px-4 fw-bold`}
@@ -140,7 +142,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({ searchQuery, onAddToCart }) =
 
             <div className="row g-4 py-3 row-cols-1 row-cols-lg-3" id="productGrid">
                 {!loading && !error && displayProducts.map(product => {
-                    const isOrganic = getCategory(product) === 'Organic';
                     const stockClass = product.stock > 0 ? 'text-success' : 'text-danger';
                     const stockText = product.stock > 0 ? `In Stock (${product.stock})` : 'Out of Stock';
 
@@ -148,9 +149,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({ searchQuery, onAddToCart }) =
                         <div className="col" key={product.id}>
                             <div className={`card h-100 shadow-sm text-bg-dark border-secondary`}>
                                 <div className="card-body">
-                                    {isOrganic && <div className="badge bg-dark border border-secondary text-light p-2 mb-2 fs-6">🌱 Bio-Input</div>}
                                     <div className="d-flex justify-content-between align-items-center mb-2">
-                                        <h5 className={`card-title mb-0 ${isOrganic ? 'text-white fw-bold' : 'text-light'}`}>
+                                        <h5 className="card-title mb-0 text-light">
                                             {product.name}
                                         </h5>
                                         <span className="badge rounded-pill text-bg-secondary shadow-sm">ID: {product.id.substring(0, 8)}</span>
