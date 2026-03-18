@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="ProductNotFound" xml:space="preserve">
+    <value>Product with ID '{0}' not found.</value>
+  </data>
+  <data name="InsufficientStock" xml:space="preserve">
+    <value>Insufficient stock for product '{0}' (SKU: {1}). Requested: {2}, Available: {3}.</value>
+  </data>
+  <data name="OrderNotFound" xml:space="preserve">
+    <value>Order with ID '{0}' not found.</value>
+  </data>
+  <data name="CannotUpdateShippedOrder" xml:space="preserve">
+    <value>Cannot update an order that has already been shipped.</value>
+  </data>
+  <data name="InvalidOrderStatus" xml:space="preserve">
+    <value>Invalid status: '{0}'. Valid values: Pending, Paid, Shipped, Cancelled.</value>
+  </data>
+  <data name="FailedToUpdateOrder" xml:space="preserve">
+    <value>Failed to update order.</value>
+  </data>
+  <data name="CannotCancelShippedOrder" xml:space="preserve">
+    <value>Cannot cancel an order that has already been shipped.</value>
+  </data>
+  <data name="OrderAlreadyCancelled" xml:space="preserve">
+    <value>Order is already cancelled.</value>
+  </data>
+  <data name="FailedToCancelOrder" xml:space="preserve">
+    <value>Failed to update order status to cancelled.</value>
+  </data>
+</root>
