@@ -48,14 +48,8 @@ const AdminDashboard: React.FC = () => {
             setProducts(productsData);
             setOrders(ordersData);
 
-            // Calculate Expiry Data
-            const thirtyDaysFromNow = new Date();
-            thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
-
-            const expiring = productsData.filter((p) => {
-                if (!p.expiryDate) return false;
-                return new Date(p.expiryDate) <= thirtyDaysFromNow;
-            });
+            // Calculate Expiry Data using new API flag natively
+            const expiring = productsData.filter((p) => p.expiringSoon === true);
 
             if (expiring.length > 0) {
                 setExpiringProducts(expiring);
@@ -134,13 +128,6 @@ const AdminDashboard: React.FC = () => {
             console.error(error);
             alert("Error communicating with the server.");
         }
-    };
-
-    const isProductExpiring = (dateStr?: string) => {
-        if (!dateStr) return false;
-        const thirtyDaysFromNow = new Date();
-        thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
-        return new Date(dateStr) <= thirtyDaysFromNow;
     };
 
     if (loading) return <div className="text-center mt-5"><div className="spinner-border text-light" /></div>;
@@ -241,7 +228,6 @@ const AdminDashboard: React.FC = () => {
                                 </thead>
                                 <tbody>
                                     {products.map(p => {
-                                        const isExpiring = isProductExpiring(p.expiryDate);
                                         return (
                                             <tr key={p.id}>
                                                 <td>
@@ -255,8 +241,8 @@ const AdminDashboard: React.FC = () => {
                                                         {p.stock > 0 && p.stock < 10 && <span className="badge text-bg-warning text-dark me-1">Low</span>}
                                                     </div>
                                                     <div>
-                                                        {isExpiring && <span className="badge text-bg-danger mt-1">Expiring Soon</span>}
-                                                        {!isExpiring && p.expiryDate && <span className="badge border border-success text-success mt-1">Valid ({new Date(p.expiryDate).toLocaleDateString()})</span>}
+                                                        {p.expiringSoon && <span className="badge border border-danger text-danger mt-1 fw-bold">⚠️ Warning: Expiring Soon</span>}
+                                                        {!p.expiringSoon && p.expiryDate && <span className="badge border border-success text-success mt-1">Valid ({new Date(p.expiryDate).toLocaleDateString()})</span>}
                                                     </div>
                                                 </td>
                                                 <td className="fw-bold fs-5">{p.stock}</td>

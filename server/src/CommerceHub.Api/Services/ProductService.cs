@@ -32,7 +32,7 @@ public class ProductService : IProductService
     private async Task<string> GenerateUniqueSkuAsync(string brand, string category, string name)
     {
         var bPrefix = string.IsNullOrWhiteSpace(brand) ? "XXX" : (brand.Length >= 3 ? brand.Substring(0, 3) : brand.PadRight(3, 'X')).ToUpper();
-        var cPrefix = string.IsNullOrWhiteSpace(category) ? "XXXX" : (category.Length >= 4 ? category.Substring(0, 4) : category.PadRight(4, 'X')).ToUpper();
+        var cPrefix = string.IsNullOrWhiteSpace(category) ? "XXX" : (category.Length >= 3 ? category.Substring(0, 3) : category.PadRight(3, 'X')).ToUpper();
         var nPrefix = string.IsNullOrWhiteSpace(name) ? "XXX" : (name.Length >= 3 ? name.Substring(0, 3) : name.PadRight(3, 'X')).ToUpper();
 
         var random = new Random();

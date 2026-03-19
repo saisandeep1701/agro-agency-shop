@@ -46,4 +46,7 @@ public class Product
 
     [BsonElement("updatedAt")]
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    [BsonIgnore]
+    public bool ExpiringSoon => ExpiryDate.HasValue && ExpiryDate.Value <= DateTime.UtcNow.AddDays(30);
 }

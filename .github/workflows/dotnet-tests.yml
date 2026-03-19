@@ -33,10 +33,13 @@ jobs:
           ${{ runner.os }}-nuget-
 
     - name: Restore dependencies
+      working-directory: ./server
       run: dotnet restore
 
     - name: Build Solution
+      working-directory: ./server
       run: dotnet build --configuration Release --no-restore
 
     - name: Run nUnit Tests
+      working-directory: ./server
       run: dotnet test --configuration Release --no-build --verbosity normal

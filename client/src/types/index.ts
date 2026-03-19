@@ -10,6 +10,7 @@ export interface Product {
     technicalName?: string;
     expiryDate?: string;
     photoUrl?: string;
+    expiringSoon?: boolean;
 }
 
 export interface CartItem {

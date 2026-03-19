@@ -10,3 +10,6 @@ obj/
 # Ignore log files
 *.log
 *.sqlite
+
+# Ignore native image uploads
+server/src/CommerceHub.Api/wwwroot/images/products/*
