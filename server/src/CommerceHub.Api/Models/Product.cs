@@ -23,6 +23,9 @@ public class Product
     [BsonElement("sku")]
     public string Sku { get; set; } = null!;
 
+    [BsonElement("description")]
+    public string Description { get; set; } = string.Empty;
+
     [BsonElement("stock")]
     public int Stock { get; set; }
 
