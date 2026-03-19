@@ -44,8 +44,8 @@ const Login: React.FC = () => {
                 {error && <div className="alert alert-danger p-2">{error}</div>}
                 <form onSubmit={handleLogin}>
                     <div className="mb-3">
-                        <label className="form-label">Admin Email</label>
-                        <input type="email" required className="form-control bg-dark text-light" value={email} onChange={e => setEmail(e.target.value)} />
+                        <label className="form-label">Admin Username</label>
+                        <input type="text" required className="form-control bg-dark text-light" value={email} onChange={e => setEmail(e.target.value)} />
                     </div>
                     <div className="mb-4">
                         <label className="form-label">Password</label>

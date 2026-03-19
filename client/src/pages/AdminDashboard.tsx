@@ -40,7 +40,12 @@ const AdminDashboard: React.FC = () => {
                 })
             ]);
 
-            if (!productsRes.ok || !ordersRes.ok) throw new Error("Failed to fetch dashboard data.");
+            if (!productsRes.ok) {
+                throw new Error(`Failed to fetch products. HTTP ${productsRes.status} ${productsRes.statusText}`);
+            }
+            if (!ordersRes.ok) {
+                throw new Error(`Failed to fetch orders. HTTP ${ordersRes.status} ${ordersRes.statusText} (likely Unauthorized)`);
+            }
 
             const productsData: Product[] = await productsRes.json();
             const ordersData: Order[] = await ordersRes.json();
@@ -60,7 +65,7 @@ const AdminDashboard: React.FC = () => {
 
         } catch (err: any) {
             console.error(err);
-            setError("Error loading admin data. Ensure backend is running at " + API_BASE_URL);
+            setError(`Error loading admin data: ${err.message}`);
         } finally {
             setLoading(false);
         }
