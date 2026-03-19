@@ -23,9 +23,27 @@ public class ProductService : IProductService
 
     public async Task<ServiceResult<Product>> CreateAsync(Product product)
     {
+        product.Sku = await GenerateUniqueSkuAsync(product.Brand, product.Category, product.Name);
         var created = await _productRepository.CreateAsync(product);
-        _logger.LogInformation("Product {ProductId} successfully created securely mapping Form bytes.", created.Id);
+        _logger.LogInformation("Product {ProductId} successfully created securely mapping Form bytes. Auto-SKU assigned: {Sku}", created.Id, created.Sku);
         return ServiceResult<Product>.Ok(created);
+    }
+
+    private async Task<string> GenerateUniqueSkuAsync(string brand, string category, string name)
+    {
+        var bPrefix = string.IsNullOrWhiteSpace(brand) ? "XXX" : (brand.Length >= 3 ? brand.Substring(0, 3) : brand.PadRight(3, 'X')).ToUpper();
+        var cPrefix = string.IsNullOrWhiteSpace(category) ? "XXXX" : (category.Length >= 4 ? category.Substring(0, 4) : category.PadRight(4, 'X')).ToUpper();
+        var nPrefix = string.IsNullOrWhiteSpace(name) ? "XXX" : (name.Length >= 3 ? name.Substring(0, 3) : name.PadRight(3, 'X')).ToUpper();
+
+        var random = new Random();
+        string sku;
+        do
+        {
+            sku = $"{bPrefix}-{cPrefix}-{nPrefix}-{random.Next(1000, 10000)}";
+        } 
+        while (await _productRepository.SkuExistsAsync(sku));
+
+        return sku;
     }
 
     public async Task<ServiceResult<Product>> AdjustStockAsync(string productId, StockAdjustmentDto request)

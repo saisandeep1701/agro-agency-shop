@@ -20,6 +20,11 @@ public interface IProductRepository
     Task<Product> CreateAsync(Product product);
 
     /// <summary>
+    /// Checks if a given SKU already actively maps an inventory object.
+    /// </summary>
+    Task<bool> SkuExistsAsync(string sku);
+
+    /// <summary>
     /// Atomically decrements stock for a product. Returns the updated product if
     /// sufficient stock was available, or null if stock was insufficient or product not found.
     /// Uses MongoDB findOneAndUpdate with a conditional filter (stock >= quantity).

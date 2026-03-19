@@ -30,6 +30,11 @@ public class ProductRepository : IProductRepository
         return product;
     }
 
+    public async Task<bool> SkuExistsAsync(string sku)
+    {
+        return await _products.Find(p => p.Sku == sku).AnyAsync();
+    }
+
     /// <summary>
     /// Atomic stock decrement using findOneAndUpdate with a guard condition.
     /// The filter ensures we only match if Stock >= quantity, preventing negative stock.

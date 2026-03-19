@@ -12,6 +12,14 @@ public class Product
     [BsonElement("name")]
     public string Name { get; set; } = null!;
 
+    [BsonElement("brand")]
+    [BsonIgnoreIfNull]
+    public string Brand { get; set; } = null!;
+
+    [BsonElement("category")]
+    [BsonIgnoreIfNull]
+    public string Category { get; set; } = null!;
+
     [BsonElement("sku")]
     public string Sku { get; set; } = null!;
 

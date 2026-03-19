@@ -56,7 +56,8 @@ public class ProductsController : ControllerBase
         var product = new CommerceHub.Api.Models.Product
         {
             Name = request.Name,
-            Sku = request.Sku,
+            Brand = request.Brand,
+            Category = request.Category,
             Description = request.Description ?? string.Empty,
             Stock = request.Stock,
             Price = request.Price,

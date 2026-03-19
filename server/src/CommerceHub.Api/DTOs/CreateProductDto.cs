@@ -9,7 +9,10 @@ public class CreateProductDto
     public string Name { get; set; } = null!;
 
     [Required]
-    public string Sku { get; set; } = null!;
+    public string Brand { get; set; } = null!;
+
+    [Required]
+    public string Category { get; set; } = null!;
 
     public string? Description { get; set; }
 

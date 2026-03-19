@@ -149,6 +149,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ searchQuery, onAddToCart }) =
                         <div className="col" key={product.id}>
                             <div className={`card h-100 shadow-sm text-bg-dark border-secondary`}>
                                 <div className="card-body">
+                                    <div className="badge bg-light text-dark fw-bold mb-3">{product.brand?.toUpperCase()}</div>
                                     <div className="d-flex justify-content-between align-items-center mb-0">
                                         <h5 className="card-title mb-0 text-light fw-bold">
                                             {product.name}

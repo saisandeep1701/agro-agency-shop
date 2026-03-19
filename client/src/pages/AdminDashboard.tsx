@@ -16,7 +16,8 @@ const AdminDashboard: React.FC = () => {
 
     // File Upload Form State
     const [name, setName] = useState('');
-    const [sku, setSku] = useState('');
+    const [brand, setBrand] = useState('');
+    const [category, setCategory] = useState('Pesticides');
     const [stock, setStock] = useState<number | ''>('');
     const [price, setPrice] = useState<number | ''>('');
     const [technicalName, setTechnicalName] = useState('');
@@ -74,14 +75,15 @@ const AdminDashboard: React.FC = () => {
     const handleCreateProduct = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (!name || !sku || stock === '' || price === '') {
+        if (!name || !brand || stock === '' || price === '') {
             alert("Please fill out required fields.");
             return;
         }
 
         const formData = new FormData();
         formData.append("Name", name);
-        formData.append("Sku", sku);
+        formData.append("Brand", brand);
+        formData.append("Category", category);
         formData.append("Stock", stock.toString());
         formData.append("Price", price.toString());
         if (technicalName) formData.append("TechnicalName", technicalName);
@@ -100,7 +102,7 @@ const AdminDashboard: React.FC = () => {
             if (response.ok) {
                 alert("Product created successfully!");
                 fetchDashboardData();
-                setName(''); setSku(''); setStock(''); setPrice('');
+                setName(''); setBrand(''); setCategory('Pesticides'); setStock(''); setPrice('');
                 setTechnicalName(''); setExpiryDate(''); setPhotoFile(null);
             } else {
                 const err = await response.json();
@@ -175,11 +177,18 @@ const AdminDashboard: React.FC = () => {
                         <div className="card-body">
                             <form onSubmit={handleCreateProduct}>
                                 <div className="mb-3">
-                                    <label className="form-label">Product Name & SKU *</label>
+                                    <label className="form-label">Brand & Product Name *</label>
                                     <div className="input-group">
-                                        <input type="text" className="form-control text-bg-dark border-secondary" placeholder="Name" value={name} onChange={e => setName(e.target.value)} required />
-                                        <input type="text" className="form-control text-bg-dark border-secondary" placeholder="SKU" value={sku} onChange={e => setSku(e.target.value)} required />
+                                        <input type="text" className="form-control text-bg-dark border-secondary" placeholder="Brand (e.g. Syngenta)" value={brand} onChange={e => setBrand(e.target.value)} required />
+                                        <input type="text" className="form-control text-bg-dark border-secondary" placeholder="Product Name" value={name} onChange={e => setName(e.target.value)} required />
                                     </div>
+                                </div>
+                                <div className="mb-3">
+                                    <label className="form-label">Category *</label>
+                                    <select className="form-select text-bg-dark border-secondary" value={category} onChange={e => setCategory(e.target.value)}>
+                                        <option value="Pesticides">Pesticides</option>
+                                        <option value="Fertilizers">Fertilizers</option>
+                                    </select>
                                 </div>
                                 <div className="mb-3">
                                     <label className="form-label">Technical Name (Optional)</label>
@@ -236,6 +245,7 @@ const AdminDashboard: React.FC = () => {
                                         return (
                                             <tr key={p.id}>
                                                 <td>
+                                                    <div className="text-light fw-bold mb-1" style={{ fontSize: '1.05rem' }}>{p.brand?.toUpperCase()}</div>
                                                     <div className="fw-bold">{p.name} <small className="text-muted ms-1">({p.sku})</small></div>
                                                     {p.technicalName && <div className="text-secondary opacity-75 fst-italic" style={{ fontSize: '0.85rem' }}>{p.technicalName}</div>}
                                                 </td>
