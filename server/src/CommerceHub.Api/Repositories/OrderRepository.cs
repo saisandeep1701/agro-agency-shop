@@ -17,6 +17,15 @@ public class OrderRepository : IOrderRepository
         return await _orders.Find(_ => true).ToListAsync();
     }
 
+    public async Task<IEnumerable<Order>> GetOrdersByDateRangeAsync(DateTime start, DateTime end)
+    {
+        var filter = Builders<Order>.Filter.And(
+            Builders<Order>.Filter.Gte(o => o.CreatedAt, start),
+            Builders<Order>.Filter.Lte(o => o.CreatedAt, end)
+        );
+        return await _orders.Find(filter).ToListAsync();
+    }
+
     public async Task<Order?> GetByIdAsync(string id)
     {
         return await _orders.Find(o => o.Id == id).FirstOrDefaultAsync();

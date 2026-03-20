@@ -46,6 +46,22 @@ public class ProductService : IProductService
         return sku;
     }
 
+    public async Task<bool> UpdateDiscountAsync(string id, decimal percentage, bool isActive)
+    {
+        var product = await _productRepository.GetByIdAsync(id);
+        if (product == null)
+        {
+            return false;
+        }
+
+        product.DiscountPercentage = percentage;
+        product.IsDiscountActive = isActive;
+        product.UpdatedAt = DateTime.UtcNow;
+
+        var updatedProduct = await _productRepository.UpdateAsync(id, product);
+        return updatedProduct != null;
+    }
+
     public async Task<ServiceResult<Product>> AdjustStockAsync(string productId, StockAdjustmentDto request)
     {
         // First check if product exists to give a useful error

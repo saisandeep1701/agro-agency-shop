@@ -30,6 +30,20 @@ public class ProductRepository : IProductRepository
         return product;
     }
 
+    public async Task<Product?> UpdateAsync(string id, Product product)
+    {
+        var filter = Builders<Product>.Filter.Eq(p => p.Id, id);
+        product.Id = id;
+        product.UpdatedAt = DateTime.UtcNow;
+
+        var options = new FindOneAndReplaceOptions<Product>
+        {
+            ReturnDocument = ReturnDocument.After
+        };
+
+        return await _products.FindOneAndReplaceAsync(filter, product, options);
+    }
+
     public async Task<bool> SkuExistsAsync(string sku)
     {
         return await _products.Find(p => p.Sku == sku).AnyAsync();

@@ -159,9 +159,18 @@ const ProductGrid: React.FC<ProductGridProps> = ({ searchQuery, onAddToCart }) =
                                     {product.technicalName && <div className="text-secondary mb-2 fst-italic" style={{ fontSize: '0.85rem' }}>{product.technicalName}</div>}
                                     {!product.technicalName && <div className="mb-2"></div>}
                                     <p className="card-text text-light mt-2">{product.description || 'No description available for this item.'}</p>
-                                    <div className="d-flex justify-content-between mt-3">
+                                    <div className="d-flex justify-content-between mt-3 align-items-center">
                                         <span className={`${stockClass} fw-bold`}>{stockText}</span>
-                                        <span className="fw-bold text-light">${product.price || '0.00'}</span>
+                                        <div className="text-end">
+                                            {product.isDiscountActive && product.discountPercentage ? (
+                                                <div className="d-flex flex-column align-items-end">
+                                                    <span className="text-muted text-decoration-line-through" style={{ fontSize: '0.9rem' }}>${product.price ? product.price.toFixed(2) : '0.00'}</span>
+                                                    <span className="fw-bold text-success fs-5">${(product.price * (1 - product.discountPercentage / 100)).toFixed(2)}</span>
+                                                </div>
+                                            ) : (
+                                                <span className="fw-bold text-light fs-5">${product.price ? product.price.toFixed(2) : '0.00'}</span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                                 <div className={`card-footer bg-transparent text-center border-secondary`}>

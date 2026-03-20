@@ -11,6 +11,8 @@ export interface Product {
     expiryDate?: string;
     photoUrl?: string;
     expiringSoon?: boolean;
+    discountPercentage?: number;
+    isDiscountActive?: boolean;
 }
 
 export interface CartItem {

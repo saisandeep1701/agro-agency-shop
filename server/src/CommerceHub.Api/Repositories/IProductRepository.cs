@@ -20,6 +20,11 @@ public interface IProductRepository
     Task<Product> CreateAsync(Product product);
 
     /// <summary>
+    /// Performs a full MongoDB document replacement.
+    /// </summary>
+    Task<Product?> UpdateAsync(string id, Product product);
+
+    /// <summary>
     /// Checks if a given SKU already actively maps an inventory object.
     /// </summary>
     Task<bool> SkuExistsAsync(string sku);

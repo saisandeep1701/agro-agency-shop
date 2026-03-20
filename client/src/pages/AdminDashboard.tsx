@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Product, Order, StockAdjustmentDto } from '../types';
 import { Link } from 'react-router-dom';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { startOfDay, endOfDay, subDays, startOfMonth, startOfYear } from 'date-fns';
 
 const API_BASE_URL = 'http://localhost:5100';
 
@@ -24,9 +27,36 @@ const AdminDashboard: React.FC = () => {
     const [expiryDate, setExpiryDate] = useState('');
     const [photoFile, setPhotoFile] = useState<File | null>(null);
 
+    // Sales Analytics State
+    const [startDate, setStartDate] = useState<Date>(startOfDay(new Date()));
+    const [endDate, setEndDate] = useState<Date>(endOfDay(new Date()));
+    const [salesData, setSalesData] = useState<{totalRevenue: number, totalOrders: number} | null>(null);
+
+    // Inline Discount States (mapping per product ID overrides)
+    const [discountInputs, setDiscountInputs] = useState<{ [key: string]: number }>({});
+
     useEffect(() => {
         fetchDashboardData();
     }, []);
+
+    useEffect(() => {
+        fetchSalesData(startDate, endDate);
+    }, [startDate, endDate]);
+
+    const fetchSalesData = async (start: Date, end: Date) => {
+        try {
+            const token = localStorage.getItem('adminToken');
+            const res = await fetch(`${API_BASE_URL}/api/sales/report?startDate=${start.toISOString()}&endDate=${end.toISOString()}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setSalesData(data);
+            }
+        } catch (e) {
+            console.error("Sales fetch error", e);
+        }
+    };
 
     const fetchDashboardData = async () => {
         setLoading(true);
@@ -135,6 +165,31 @@ const AdminDashboard: React.FC = () => {
         }
     };
 
+    const handleApplyDiscount = async (productId: string, isActive: boolean) => {
+        const percentage = discountInputs[productId] || 0;
+        try {
+            const token = localStorage.getItem('adminToken');
+            const response = await fetch(`${API_BASE_URL}/api/products/${productId}/discount`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ discountPercentage: percentage, isDiscountActive: isActive })
+            });
+
+            if (response.ok) {
+                fetchDashboardData();
+            } else {
+                alert("Failed to apply discount.");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Error communicating with the server.");
+        }
+    };
+
+    const handleDiscountChange = (productId: string, val: string) => {
+        setDiscountInputs(prev => ({ ...prev, [productId]: Number(val) }));
+    };
+
     if (loading) return <div className="text-center mt-5"><div className="spinner-border text-light" /></div>;
     if (error) return <div className="alert alert-danger m-5">{error}</div>;
 
@@ -227,7 +282,7 @@ const AdminDashboard: React.FC = () => {
                                     <tr>
                                         <th>Name & Tech Specs</th>
                                         <th>Status / Expiry</th>
-                                        <th>Stock</th>
+                                        <th>Stock & Discount</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -250,9 +305,24 @@ const AdminDashboard: React.FC = () => {
                                                         {!p.expiringSoon && p.expiryDate && <span className="badge border border-success text-success mt-1">Valid ({new Date(p.expiryDate).toLocaleDateString()})</span>}
                                                     </div>
                                                 </td>
-                                                <td className="fw-bold fs-5">{p.stock}</td>
+                                                <td className="fw-bold fs-5">
+                                                    <div>{p.stock} Unit(s)</div>
+                                                    <div className="mt-2 d-flex flex-column" style={{ maxWidth: '140px' }}>
+                                                        <div className="input-group input-group-sm mb-1">
+                                                            <input type="number" 
+                                                                   className="form-control text-bg-dark border-secondary" 
+                                                                   placeholder="%" 
+                                                                   value={discountInputs[p.id] !== undefined ? discountInputs[p.id] : (p.discountPercentage || 0)} 
+                                                                   onChange={(e) => handleDiscountChange(p.id, e.target.value)} 
+                                                            />
+                                                            <button className="btn btn-outline-success" onClick={() => handleApplyDiscount(p.id, true)}>On</button>
+                                                            <button className="btn btn-outline-danger" onClick={() => handleApplyDiscount(p.id, false)}>Off</button>
+                                                        </div>
+                                                        {p.isDiscountActive && <small className="text-success fw-bold">Active (-{p.discountPercentage}%)</small>}
+                                                    </div>
+                                                </td>
                                                 <td>
-                                                    <button className="btn btn-sm btn-dark border-light" onClick={() => handleRestock(p.id)}>
+                                                    <button className="btn btn-sm btn-dark border-light mb-2 w-100" onClick={() => handleRestock(p.id)}>
                                                         + Restock (50)
                                                     </button>
                                                 </td>
@@ -264,6 +334,44 @@ const AdminDashboard: React.FC = () => {
                                     )}
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* NEW: SALES ANALYTICS */}
+            <div className="row mb-4">
+                <div className="col-12">
+                    <div className="card text-bg-dark border-secondary shadow" style={{ background: 'rgba(0, 0, 0, 0.6)', backdropFilter: 'blur(15px)' }}>
+                        <div className="card-header border-secondary d-flex justify-content-between align-items-center flex-wrap">
+                            <h4 className="mb-0 text-info">📈 Sales Analytics</h4>
+                            <div className="d-flex gap-2 mt-2 mt-md-0">
+                                <button className="btn btn-sm btn-outline-light" onClick={() => { setStartDate(startOfDay(new Date())); setEndDate(endOfDay(new Date())); }}>Today</button>
+                                <button className="btn btn-sm btn-outline-light" onClick={() => { setStartDate(subDays(new Date(), 7)); setEndDate(endOfDay(new Date())); }}>This Week</button>
+                                <button className="btn btn-sm btn-outline-light" onClick={() => { setStartDate(startOfMonth(new Date())); setEndDate(endOfDay(new Date())); }}>This Month</button>
+                                <button className="btn btn-sm btn-outline-light" onClick={() => { setStartDate(startOfYear(new Date())); setEndDate(endOfDay(new Date())); }}>This Year</button>
+                            </div>
+                        </div>
+                        <div className="card-body">
+                            <div className="row align-items-center mb-4">
+                                <div className="col-12 col-md-6 d-flex flex-column flex-md-row gap-3 text-light">
+                                    <div className="d-flex flex-column">
+                                        <label className="text-muted small fw-bold">START DATE</label>
+                                        <DatePicker selected={startDate} onChange={(date: Date | null) => date && setStartDate(date)} className="form-control text-bg-dark border-secondary bg-dark text-light" />
+                                    </div>
+                                    <div className="d-flex flex-column">
+                                        <label className="text-muted small fw-bold">END DATE</label>
+                                        <DatePicker selected={endDate} onChange={(date: Date | null) => date && setEndDate(date)} className="form-control text-bg-dark border-secondary bg-dark text-light" />
+                                    </div>
+                                </div>
+                                <div className="col-12 col-md-6 mt-4 mt-md-0 text-md-end">
+                                    <div className="bg-dark border border-secondary p-3 rounded d-inline-block shadow-sm">
+                                        <div className="text-muted text-uppercase fw-bold mb-1" style={{ letterSpacing: '1px' }}>Total Revenue Generated</div>
+                                        <h2 className="mb-0 text-success fw-bold">${salesData ? salesData.totalRevenue.toFixed(2) : '0.00'}</h2>
+                                        <small className="text-muted">From {salesData ? salesData.totalOrders : 0} Total Orders</small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -102,4 +102,18 @@ public class ProductsController : ControllerBase
             updatedAt = result.Data.UpdatedAt
         });
     }
+
+    [HttpPatch("{id:length(24)}/discount")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateDiscount(string id, [FromBody] UpdateDiscountDto request)
+    {
+        var success = await _productService.UpdateDiscountAsync(id, request.DiscountPercentage, request.IsDiscountActive);
+
+        if (!success)
+        {
+            return NotFound();
+        }
+
+        return NoContent();
+    }
 }
