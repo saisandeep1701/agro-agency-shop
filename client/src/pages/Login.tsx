@@ -16,11 +16,13 @@ const Login: React.FC = () => {
         setLoading(true);
 
         try {
+            console.log(`[AUTH-DIAGNOSTIC] Firing Login POST to: ${API_BASE_URL}/api/auth/login`);
             const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
+            console.log(`[AUTH-DIAGNOSTIC] Response received visually carrying Status Code: ${response.status}`);
 
             if (response.ok) {
                 const data = await response.json();
