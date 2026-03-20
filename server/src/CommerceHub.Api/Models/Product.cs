@@ -32,8 +32,8 @@ public class Product
     [BsonElement("price")]
     public decimal Price { get; set; }
 
-    [BsonElement("discountPercentage")]
-    public decimal DiscountPercentage { get; set; } = 0;
+    [BsonElement("discountAmount")]
+    public decimal DiscountAmount { get; set; } = 0;
 
     [BsonElement("isDiscountActive")]
     public bool IsDiscountActive { get; set; } = false;

@@ -151,13 +151,16 @@ const ProductGrid: React.FC<ProductGridProps> = ({ searchQuery, onAddToCart }) =
                                 <div className="card-body">
                                     <div className="d-flex justify-content-between align-items-center mb-3">
                                         <div className="badge bg-light text-dark fw-bold">{product.brand?.toUpperCase()}</div>
-                                        {product.isDiscountActive && product.discountPercentage ? (
-                                            <div className="badge bg-danger shadow fs-6 fw-bold border border-light">🔥 SALE! -{product.discountPercentage}%</div>
+                                        {product.isDiscountActive && product.discountAmount ? (
+                                            <div className="badge bg-danger shadow fs-6 fw-bold border border-light">
+                                                🔥 SALE! -{Math.round((product.discountAmount / product.price) * 100)}%
+                                            </div>
                                         ) : null}
                                     </div>
                                     <div className="d-flex justify-content-between align-items-center mb-0">
                                         <h5 className="card-title mb-0 text-light fw-bold">
                                             {product.name}
+                                            {product.technicalName && <span className="d-block fst-italic text-secondary mt-1" style={{ fontSize: '0.8rem' }}>{product.technicalName}</span>}
                                         </h5>
                                         <span className="badge rounded-pill text-bg-secondary shadow-sm">ID: {product.id.substring(0, 8)}</span>
                                     </div>
@@ -167,13 +170,19 @@ const ProductGrid: React.FC<ProductGridProps> = ({ searchQuery, onAddToCart }) =
                                     <div className="d-flex justify-content-between mt-3 align-items-center">
                                         <span className={`${stockClass} fw-bold`}>{stockText}</span>
                                         <div className="text-end">
-                                            {product.isDiscountActive && product.discountPercentage ? (
+                                            {product.isDiscountActive && product.discountAmount ? (
                                                 <div className="d-flex flex-column align-items-end">
-                                                    <span className="text-muted text-decoration-line-through" style={{ fontSize: '0.9rem' }}>${product.price ? product.price.toFixed(2) : '0.00'}</span>
-                                                    <span className="fw-bold text-success fs-5">${(product.price * (1 - product.discountPercentage / 100)).toFixed(2)}</span>
+                                                    <span className="text-muted text-decoration-line-through" style={{ fontSize: '0.9rem' }}>
+                                                        ${product.price ? product.price.toFixed(2) : '0.00'}
+                                                    </span>
+                                                    <span className="fw-bold text-success fs-5">
+                                                        ${(product.price - product.discountAmount).toFixed(2)}
+                                                    </span>
                                                 </div>
                                             ) : (
-                                                <span className="fw-bold text-light fs-5">${product.price ? product.price.toFixed(2) : '0.00'}</span>
+                                                <span className="fw-bold text-light fs-5">
+                                                    ${product.price ? product.price.toFixed(2) : '0.00'}
+                                                </span>
                                             )}
                                         </div>
                                     </div>

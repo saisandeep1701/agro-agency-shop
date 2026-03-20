@@ -27,6 +27,10 @@ const AdminDashboard: React.FC = () => {
     const [expiryDate, setExpiryDate] = useState('');
     const [photoFile, setPhotoFile] = useState<File | null>(null);
 
+    // Smart Form State
+    const [searchQuery, setSearchQuery] = useState('');
+    const [customRestock, setCustomRestock] = useState<number | ''>('');
+
     // Sales Analytics State
     const [startDate, setStartDate] = useState<Date>(startOfDay(new Date()));
     const [endDate, setEndDate] = useState<Date>(endOfDay(new Date()));
@@ -143,6 +147,24 @@ const AdminDashboard: React.FC = () => {
         }
     };
 
+    const handleDirectRestock = async (productId: string, qty: number) => {
+        const adjustment: StockAdjustmentDto = { productId, quantityToAdjust: qty, reason: "Smart Restock Form" };
+        try {
+            const token = localStorage.getItem('adminToken');
+            const res = await fetch(`${API_BASE_URL}/api/products/${productId}/stock`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(adjustment)
+            });
+            if (res.ok) {
+                alert(`Successfully added ${qty} stock!`);
+                setSearchQuery('');
+                setCustomRestock('');
+                fetchDashboardData();
+            } else { alert("Failed to add stock."); }
+        } catch { alert("Error communicating with server."); }
+    };
+
     const handleRestock = async (productId: string) => {
         const adjustment: StockAdjustmentDto = { productId, quantityToAdjust: 50, reason: "Admin Restock" };
         try {
@@ -166,13 +188,13 @@ const AdminDashboard: React.FC = () => {
     };
 
     const handleApplyDiscount = async (productId: string, isActive: boolean) => {
-        const percentage = discountInputs[productId] || 0;
+        const amount = discountInputs[productId] || 0;
         try {
             const token = localStorage.getItem('adminToken');
             const response = await fetch(`${API_BASE_URL}/api/products/${productId}/discount`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ discountPercentage: percentage, isDiscountActive: isActive })
+                body: JSON.stringify({ discountAmount: amount, isDiscountActive: isActive })
             });
 
             if (response.ok) {
@@ -192,6 +214,18 @@ const AdminDashboard: React.FC = () => {
 
     if (loading) return <div className="text-center mt-5"><div className="spinner-border text-light" /></div>;
     if (error) return <div className="alert alert-danger m-5">{error}</div>;
+
+    // Helper logic deriving Stock / Analytics outputs
+    const matchedProduct = products.find(p => p.name.toLowerCase() === searchQuery.toLowerCase() || p.sku?.toLowerCase() === searchQuery.toLowerCase());
+    const stockValuation = products.reduce((acc, p) => acc + (p.price * p.stock), 0);
+    const lowStockItems = products.filter(p => p.stock > 0 && p.stock < 10);
+    
+    // Calculate Fast/Slow Movers
+    const orderFrequency: { [key: string]: number } = {};
+    orders.forEach(o => { o.items.forEach(item => { orderFrequency[item.productId] = (orderFrequency[item.productId] || 0) + item.quantity; }); });
+    const productStats = products.map(p => ({ ...p, totalSold: orderFrequency[p.id] || 0 })).sort((a,b) => b.totalSold - a.totalSold);
+    const fastMovers = productStats.slice(0, 3);
+    const slowMovers = [...productStats].reverse().slice(0, 3);
 
     return (
         <div className="container py-5 text-white">
@@ -219,16 +253,37 @@ const AdminDashboard: React.FC = () => {
                 <div className="col-12 col-xl-4 mb-4">
                     <div className="card text-bg-dark border-secondary shadow h-100" style={{ background: 'rgba(0, 0, 0, 0.6)', backdropFilter: 'blur(15px)' }}>
                         <div className="card-header border-secondary">
-                            <h4 className="mb-0 text-success">📱 Direct Entry</h4>
+                            <h4 className="mb-0 text-success">📱 Smart Entry</h4>
                         </div>
                         <div className="card-body">
-                            <form onSubmit={handleCreateProduct}>
-                                <div className="mb-3">
-                                    <label className="form-label">Brand & Product Name *</label>
-                                    <div className="input-group">
-                                        <input type="text" className="form-control text-bg-dark border-secondary" placeholder="Brand (e.g. Syngenta)" value={brand} onChange={e => setBrand(e.target.value)} required />
-                                        <input type="text" className="form-control text-bg-dark border-secondary" placeholder="Product Name" value={name} onChange={e => setName(e.target.value)} required />
+                            <div className="mb-4 pb-2 border-bottom border-secondary">
+                                <label className="form-label text-info fw-bold">Live Search &amp; Quick Add</label>
+                                <input type="text" className="form-control text-bg-dark text-light border-secondary" placeholder="Search exact Product Name or SKU..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                                {searchQuery && !matchedProduct && <small className="text-warning mt-1 d-block">No exact match found — Form generates NEW product.</small>}
+                            </div>
+
+                            {matchedProduct ? (
+                                <form onSubmit={(e) => { e.preventDefault(); if (customRestock) handleDirectRestock(matchedProduct.id, Number(customRestock)); }}>
+                                    <div className="alert alert-success bg-transparent border-success p-3">
+                                        <h5 className="text-success fw-bold">♻️ Existing Inventory Discovered!</h5>
+                                        <div className="mb-1"><strong>Product:</strong> {matchedProduct.name}</div>
+                                        <div className="mb-3"><strong>Current Stock:</strong> {matchedProduct.stock}</div>
+                                        <label className="form-label fw-bold">Add Additional Stock</label>
+                                        <div className="input-group">
+                                            <input type="number" className="form-control text-bg-dark border-secondary text-light" placeholder="Quantity" value={customRestock} onChange={e => setCustomRestock(e.target.value ? Number(e.target.value) : '')} required />
+                                            <button type="submit" className="btn btn-success fw-bold">Patch Stock</button>
+                                        </div>
                                     </div>
+                                    <button type="button" className="btn btn-outline-secondary w-100 text-light mt-2" onClick={() => setSearchQuery('')}>Cancel / Clear Search</button>
+                                </form>
+                            ) : (
+                                <form onSubmit={handleCreateProduct}>
+                                    <div className="mb-3">
+                                        <label className="form-label">Brand & Product Name *</label>
+                                        <div className="input-group">
+                                            <input type="text" className="form-control text-bg-dark border-secondary" placeholder="Brand (e.g. Syngenta)" value={brand} onChange={e => setBrand(e.target.value)} required />
+                                            <input type="text" className="form-control text-bg-dark border-secondary" placeholder="Product Name" value={name} onChange={e => setName(e.target.value)} required />
+                                        </div>
                                 </div>
                                 <div className="mb-3">
                                     <label className="form-label">Category *</label>
@@ -266,6 +321,7 @@ const AdminDashboard: React.FC = () => {
                                 </div>
                                 <button type="submit" className="btn btn-success fw-bold w-100">Upload to Database</button>
                             </form>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -309,16 +365,17 @@ const AdminDashboard: React.FC = () => {
                                                     <div>{p.stock} Unit(s)</div>
                                                     <div className="mt-2 d-flex flex-column" style={{ maxWidth: '140px' }}>
                                                         <div className="input-group input-group-sm mb-1">
+                                                            <span className="input-group-text bg-secondary text-white border-secondary">$</span>
                                                             <input type="number" 
-                                                                   className="form-control text-bg-dark border-secondary" 
-                                                                   placeholder="%" 
-                                                                   value={discountInputs[p.id] !== undefined ? discountInputs[p.id] : (p.discountPercentage || 0)} 
+                                                                   className="form-control text-bg-dark border-secondary text-light" 
+                                                                   placeholder="Amount" 
+                                                                   value={discountInputs[p.id] !== undefined ? discountInputs[p.id] : (p.discountAmount || 0)} 
                                                                    onChange={(e) => handleDiscountChange(p.id, e.target.value)} 
                                                             />
                                                             <button className="btn btn-outline-success" onClick={() => handleApplyDiscount(p.id, true)}>On</button>
                                                             <button className="btn btn-outline-danger" onClick={() => handleApplyDiscount(p.id, false)}>Off</button>
                                                         </div>
-                                                        {p.isDiscountActive && <small className="text-success fw-bold">Active (-{p.discountPercentage}%)</small>}
+                                                        {p.isDiscountActive && <small className="text-success fw-bold">Active (-${p.discountAmount})</small>}
                                                     </div>
                                                 </td>
                                                 <td>
@@ -372,6 +429,61 @@ const AdminDashboard: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="row">
+                <div className="col-12 mb-4">
+                    <div className="card text-bg-dark border-secondary shadow" style={{ background: 'rgba(0, 0, 0, 0.6)', backdropFilter: 'blur(15px)' }}>
+                        <div className="card-header border-secondary">
+                            <h4 className="mb-0 text-warning">📦 Stock Analytics</h4>
+                        </div>
+                        <div className="card-body">
+                            <div className="row g-4">
+                                <div className="col-12 col-md-4">
+                                    <div className="bg-dark border border-secondary p-3 rounded h-100 shadow-sm">
+                                        <div className="text-muted text-uppercase fw-bold mb-1" style={{ letterSpacing: '1px' }}>Total Inventory Valuation</div>
+                                        <h2 className="mb-0 text-warning fw-bold">${stockValuation.toFixed(2)}</h2>
+                                        <small className="text-muted">Net Worth of Unliquidated Goods</small>
+                                    </div>
+                                </div>
+                                <div className="col-12 col-md-4">
+                                    <div className="bg-dark border border-secondary p-3 rounded h-100 shadow-sm">
+                                        <div className="text-muted text-uppercase fw-bold mb-1" style={{ letterSpacing: '1px' }}>Fast Movers</div>
+                                        {fastMovers.length > 0 ? fastMovers.map(p => (
+                                            <div key={p.id} className="d-flex justify-content-between border-bottom border-secondary py-1">
+                                                <span>{p.name} <small className="text-muted">({p.sku})</small></span>
+                                                <span className="text-success fw-bold">{p.totalSold} Sold</span>
+                                            </div>
+                                        )) : <span className="text-muted">No sales data yet.</span>}
+                                    </div>
+                                </div>
+                                <div className="col-12 col-md-4">
+                                    <div className="bg-dark border border-secondary p-3 rounded h-100 shadow-sm">
+                                        <div className="text-muted text-uppercase fw-bold mb-1" style={{ letterSpacing: '1px' }}>Slow Movers</div>
+                                        {slowMovers.length > 0 ? slowMovers.map(p => (
+                                            <div key={p.id} className="d-flex justify-content-between border-bottom border-secondary py-1">
+                                                <span>{p.name} <small className="text-muted">({p.sku})</small></span>
+                                                <span className="text-danger fw-bold">{p.totalSold} Sold</span>
+                                            </div>
+                                        )) : <span className="text-muted">No sales data yet.</span>}
+                                    </div>
+                                </div>
+                            </div>
+                            {lowStockItems.length > 0 && (
+                                <div className="mt-4 p-3 bg-danger bg-opacity-10 border border-danger rounded">
+                                    <h5 className="text-danger fw-bold mb-3">⚠️ Critical Low Stock Targets (&lt; 10 Units)</h5>
+                                    <div className="d-flex flex-wrap gap-2">
+                                        {lowStockItems.map(p => (
+                                            <span key={p.id} className="badge bg-danger text-light px-3 py-2 border border-light">
+                                                {p.name} ({p.stock} left)
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

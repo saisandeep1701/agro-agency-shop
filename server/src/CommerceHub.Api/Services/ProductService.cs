@@ -46,7 +46,7 @@ public class ProductService : IProductService
         return sku;
     }
 
-    public async Task<bool> UpdateDiscountAsync(string id, decimal percentage, bool isActive)
+    public async Task<bool> UpdateDiscountAsync(string id, decimal amount, bool isActive)
     {
         var product = await _productRepository.GetByIdAsync(id);
         if (product == null)
@@ -54,7 +54,7 @@ public class ProductService : IProductService
             return false;
         }
 
-        product.DiscountPercentage = percentage;
+        product.DiscountAmount = amount;
         product.IsDiscountActive = isActive;
         product.UpdatedAt = DateTime.UtcNow;
 

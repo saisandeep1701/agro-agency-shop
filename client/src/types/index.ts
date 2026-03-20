@@ -11,7 +11,7 @@ export interface Product {
     expiryDate?: string;
     photoUrl?: string;
     expiringSoon?: boolean;
-    discountPercentage?: number;
+    discountAmount?: number;
     isDiscountActive?: boolean;
 }
 

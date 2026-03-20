@@ -107,7 +107,7 @@ public class ProductsController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateDiscount(string id, [FromBody] UpdateDiscountDto request)
     {
-        var success = await _productService.UpdateDiscountAsync(id, request.DiscountPercentage, request.IsDiscountActive);
+        var success = await _productService.UpdateDiscountAsync(id, request.DiscountAmount, request.IsDiscountActive);
 
         if (!success)
         {
