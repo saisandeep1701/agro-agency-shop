@@ -316,7 +316,14 @@ const AdminDashboard: React.FC = () => {
                                                 key={result.id} 
                                                 type="button" 
                                                 className="list-group-item list-group-item-action list-group-item-dark border-secondary"
-                                                onClick={() => { setSelectedProduct(result); setRestockNewPrice(result.price); setSearchQuery(''); setSearchResults([]); }}
+                                                onClick={() => { 
+                                                    console.log("Product Selected:", result);
+                                                    console.log("Current Form State:", { name: result.name, brand: result.brand, techName: result.technicalName, price: result.price, currentStock: result.stock });
+                                                    setSelectedProduct(result); 
+                                                    setRestockNewPrice(result.price); 
+                                                    setSearchQuery(''); 
+                                                    setSearchResults([]); 
+                                                }}
                                             >
                                                 <div className="d-flex justify-content-between align-items-center">
                                                     <div>
@@ -336,9 +343,9 @@ const AdminDashboard: React.FC = () => {
 
                             {selectedProduct ? (
                                 <form onSubmit={handleRestockWithPrice}>
-                                    <div className="alert alert-success bg-transparent border-success p-3">
+                                    <div className="alert alert-warning bg-transparent border-warning p-3 shadow-lg" style={{ boxShadow: '0 0 15px rgba(255, 193, 7, 0.2)' }}>
                                         <div className="d-flex justify-content-between align-items-start mb-2">
-                                            <h5 className="text-success fw-bold mb-0">♻️ Restock &amp; Pricing Update</h5>
+                                            <h5 className="text-warning fw-bold mb-0">UPDATE MODE: Restock &amp; Pricing Update</h5>
                                             <button type="button" className="btn-close btn-close-white" onClick={() => setSelectedProduct(null)} aria-label="Close"></button>
                                         </div>
                                         <div className="mb-1 text-light"><strong>Product:</strong> [{selectedProduct.brand?.toUpperCase()}] {selectedProduct.name}</div>
