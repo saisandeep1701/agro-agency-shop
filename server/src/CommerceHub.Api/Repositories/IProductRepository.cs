@@ -46,4 +46,14 @@ public interface IProductRepository
     /// Returns the updated product, or null if the adjustment would result in negative stock.
     /// </summary>
     Task<Product?> AdjustStockAsync(string productId, int adjustment);
+
+    /// <summary>
+    /// Searches products dynamically matching a raw substring via Regex logic on MongoDB natively.
+    /// </summary>
+    Task<IEnumerable<Product>> SearchAsync(string query);
+
+    /// <summary>
+    /// Atomically increments stock while strictly overriding native base prices symmetrically.
+    /// </summary>
+    Task<Product?> RestockWithPriceAsync(string productId, int addedQuantity, decimal newPrice);
 }

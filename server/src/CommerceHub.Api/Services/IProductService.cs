@@ -9,4 +9,6 @@ public interface IProductService
     Task<ServiceResult<Product>> AdjustStockAsync(string productId, StockAdjustmentDto request);
     Task<ServiceResult<Product>> CreateAsync(Product product);
     Task<bool> UpdateDiscountAsync(string id, decimal amount, bool isActive);
+    Task<ServiceResult<IEnumerable<Product>>> SearchAsync(string query);
+    Task<ServiceResult<Product>> RestockWithPriceAsync(string productId, int addedQuantity, decimal newPrice);
 }

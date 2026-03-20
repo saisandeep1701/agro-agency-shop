@@ -27,9 +27,15 @@ const AdminDashboard: React.FC = () => {
     const [expiryDate, setExpiryDate] = useState('');
     const [photoFile, setPhotoFile] = useState<File | null>(null);
 
-    // Smart Form State
+    // Smart Form State (V7)
     const [searchQuery, setSearchQuery] = useState('');
-    const [customRestock, setCustomRestock] = useState<number | ''>('');
+    const [searchResults, setSearchResults] = useState<Product[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+    // V7 Restock Form State
+    const [restockAddedQuantity, setRestockAddedQuantity] = useState<number | ''>('');
+    const [restockNewPrice, setRestockNewPrice] = useState<number | ''>('');
 
     // Sales Analytics State
     const [startDate, setStartDate] = useState<Date>(startOfDay(new Date()));
@@ -46,6 +52,32 @@ const AdminDashboard: React.FC = () => {
     useEffect(() => {
         fetchSalesData(startDate, endDate);
     }, [startDate, endDate]);
+
+    // V7 Dynamic API Search Debounce
+    useEffect(() => {
+        // Only run Live Search if there isn't a Selected Product holding the modal state
+        if (!searchQuery || selectedProduct) {
+            setSearchResults([]);
+            return;
+        }
+
+        const delayDebounceFn = setTimeout(async () => {
+            setIsSearching(true);
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/products/search?name=${encodeURIComponent(searchQuery)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setSearchResults(data);
+                }
+            } catch (error) {
+                console.error("Search fetch failed:", error);
+            } finally {
+                setIsSearching(false);
+            }
+        }, 300);
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchQuery, selectedProduct]);
 
     const fetchSalesData = async (start: Date, end: Date) => {
         try {
@@ -147,22 +179,37 @@ const AdminDashboard: React.FC = () => {
         }
     };
 
-    const handleDirectRestock = async (productId: string, qty: number) => {
+    const handleRestockWithPrice = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedProduct) return;
+        const qty = Number(restockAddedQuantity) || 0;
+        const newP = Number(restockNewPrice) || selectedProduct.price;
+
         try {
             const token = localStorage.getItem('adminToken');
-            const res = await fetch(`${API_BASE_URL}/api/products/${productId}/stock`, {
+            const res = await fetch(`${API_BASE_URL}/api/products/${selectedProduct.id}/restock`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ adjustment: qty })
+                body: JSON.stringify({ addedQuantity: qty, newPrice: newP })
             });
+
             if (res.ok) {
-                alert(`Successfully added ${qty} stock!`);
-                setSearchQuery('');
-                setCustomRestock('');
+                alert(`Successfully restocked & updated price!`);
                 fetchDashboardData();
-            } else { alert("Failed to add stock."); }
-        } catch { alert("Error communicating with server."); }
+                setSelectedProduct(null);
+                setSearchQuery('');
+                setRestockAddedQuantity('');
+                setRestockNewPrice('');
+            } else {
+                const err = await res.json();
+                alert(`Failed to restock: ${err.error || "Unknown error"}`);
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Error communicating with server.");
+        }
     };
+
 
     const handleRestock = async (productId: string) => {
         try {
@@ -214,7 +261,6 @@ const AdminDashboard: React.FC = () => {
     if (error) return <div className="alert alert-danger m-5">{error}</div>;
 
     // Helper logic deriving Stock / Analytics outputs
-    const matchedProduct = products.find(p => p.name.toLowerCase() === searchQuery.toLowerCase() || p.sku?.toLowerCase() === searchQuery.toLowerCase());
     const stockValuation = products.reduce((acc, p) => acc + (p.price * p.stock), 0);
     const lowStockItems = products.filter(p => p.stock > 0 && p.stock < 10);
     
@@ -256,23 +302,61 @@ const AdminDashboard: React.FC = () => {
                         <div className="card-body">
                             <div className="mb-4 pb-2 border-bottom border-secondary">
                                 <label className="form-label text-info fw-bold">Live Search &amp; Quick Add</label>
-                                <input type="text" className="form-control text-bg-dark text-light border-secondary" placeholder="Search exact Product Name or SKU..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
-                                {searchQuery && !matchedProduct && <small className="text-warning mt-1 d-block">No exact match found — Form generates NEW product.</small>}
+                                <input type="text" className="form-control text-bg-dark text-light border-secondary" placeholder="Search Product Name, Brand, or SKU..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                                {isSearching && <small className="text-muted mt-1 d-block">Searching...</small>}
+                                
+                                {/* LIVE SEARCH RESULTS DROPDOWN */}
+                                {searchQuery && !selectedProduct && searchResults.length > 0 && (
+                                    <div className="list-group position-absolute w-100 shadow-lg mt-1" style={{ zIndex: 1000, maxHeight: '250px', overflowY: 'auto' }}>
+                                        {searchResults.map(result => (
+                                            <button 
+                                                key={result.id} 
+                                                type="button" 
+                                                className="list-group-item list-group-item-action list-group-item-dark border-secondary"
+                                                onClick={() => { setSelectedProduct(result); setRestockNewPrice(result.price); setSearchQuery(''); setSearchResults([]); }}
+                                            >
+                                                <div className="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <strong>[{result.brand?.toUpperCase()}] - {result.name}</strong>
+                                                        {result.technicalName && <span className="ms-2 text-secondary fst-italic" style={{fontSize:'0.85rem'}}>- {result.technicalName}</span>}
+                                                    </div>
+                                                    <span className="badge bg-success">${result.price.toFixed(2)}</span>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                                {searchQuery && !selectedProduct && searchResults.length === 0 && !isSearching && (
+                                    <small className="text-warning mt-1 d-block">No match found — Form generates NEW product.</small>
+                                )}
                             </div>
 
-                            {matchedProduct ? (
-                                <form onSubmit={(e) => { e.preventDefault(); if (customRestock) handleDirectRestock(matchedProduct.id, Number(customRestock)); }}>
+                            {selectedProduct ? (
+                                <form onSubmit={handleRestockWithPrice}>
                                     <div className="alert alert-success bg-transparent border-success p-3">
-                                        <h5 className="text-success fw-bold">♻️ Existing Inventory Discovered!</h5>
-                                        <div className="mb-1"><strong>Product:</strong> {matchedProduct.name}</div>
-                                        <div className="mb-3"><strong>Current Stock:</strong> {matchedProduct.stock}</div>
-                                        <label className="form-label fw-bold">Add Additional Stock</label>
-                                        <div className="input-group">
-                                            <input type="number" className="form-control text-bg-dark border-secondary text-light" placeholder="Quantity" value={customRestock} onChange={e => setCustomRestock(e.target.value ? Number(e.target.value) : '')} required />
-                                            <button type="submit" className="btn btn-success fw-bold">Patch Stock</button>
+                                        <div className="d-flex justify-content-between align-items-start mb-2">
+                                            <h5 className="text-success fw-bold mb-0">♻️ Restock &amp; Pricing Update</h5>
+                                            <button type="button" className="btn-close btn-close-white" onClick={() => setSelectedProduct(null)} aria-label="Close"></button>
                                         </div>
+                                        <div className="mb-1 text-light"><strong>Product:</strong> [{selectedProduct.brand?.toUpperCase()}] {selectedProduct.name}</div>
+                                        <div className="mb-3 text-light"><strong>Current Stock:</strong> {selectedProduct.stock}</div>
+                                        
+                                        <div className="row g-2 mb-3">
+                                            <div className="col-12 col-md-6">
+                                                <label className="form-label fw-bold text-light">Add Quantity</label>
+                                                <input type="number" className="form-control text-bg-dark border-secondary text-light" placeholder="Quantity to Add" value={restockAddedQuantity} onChange={e => setRestockAddedQuantity(e.target.value ? Number(e.target.value) : '')} required />
+                                            </div>
+                                            <div className="col-12 col-md-6">
+                                                <label className="form-label fw-bold text-light">New Unit Price</label>
+                                                <div className="input-group">
+                                                    <span className="input-group-text bg-secondary text-white border-secondary">$</span>
+                                                    <input type="number" step="0.01" className="form-control text-bg-dark border-secondary" placeholder="Price" value={restockNewPrice} onChange={e => setRestockNewPrice(e.target.value ? Number(e.target.value) : '')} required />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <button type="submit" className="btn btn-success fw-bold w-100">Commit Dual Update</button>
                                     </div>
-                                    <button type="button" className="btn btn-outline-secondary w-100 text-light mt-2" onClick={() => setSearchQuery('')}>Cancel / Clear Search</button>
                                 </form>
                             ) : (
                                 <form onSubmit={handleCreateProduct}>

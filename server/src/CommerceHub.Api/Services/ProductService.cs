@@ -88,4 +88,32 @@ public class ProductService : IProductService
 
         return ServiceResult<Product>.Ok(updatedProduct);
     }
+
+    public async Task<ServiceResult<IEnumerable<Product>>> SearchAsync(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return ServiceResult<IEnumerable<Product>>.Ok(new List<Product>());
+        }
+        var results = await _productRepository.SearchAsync(query);
+        return ServiceResult<IEnumerable<Product>>.Ok(results);
+    }
+
+    public async Task<ServiceResult<Product>> RestockWithPriceAsync(string productId, int addedQuantity, decimal newPrice)
+    {
+        var product = await _productRepository.GetByIdAsync(productId);
+        if (product == null)
+            return ServiceResult<Product>.Fail(404, $"Product with ID '{productId}' not found.");
+
+        var updatedProduct = await _productRepository.RestockWithPriceAsync(productId, addedQuantity, newPrice);
+
+        if (updatedProduct == null)
+        {
+            _logger.LogWarning("RestockWithPrice rejected. Negative stock drop.");
+            return ServiceResult<Product>.Fail(409, "RestockWithPrice adjustment would result in negative stock.");
+        }
+
+        _logger.LogInformation("RestockWithPrice completed for {ProductId}.", productId);
+        return ServiceResult<Product>.Ok(updatedProduct);
+    }
 }

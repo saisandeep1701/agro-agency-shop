@@ -126,4 +126,42 @@ public class ProductRepository : IProductRepository
 
         return await _products.FindOneAndUpdateAsync(filter, update, options);
     }
+
+    public async Task<IEnumerable<Product>> SearchAsync(string query)
+    {
+        var filter = Builders<Product>.Filter.Or(
+            Builders<Product>.Filter.Regex(p => p.Name, new MongoDB.Bson.BsonRegularExpression(query, "i")),
+            Builders<Product>.Filter.Regex(p => p.Brand, new MongoDB.Bson.BsonRegularExpression(query, "i")),
+            Builders<Product>.Filter.Regex(p => p.Sku, new MongoDB.Bson.BsonRegularExpression(query, "i"))
+        );
+        return await _products.Find(filter).Limit(30).ToListAsync();
+    }
+
+    public async Task<Product?> RestockWithPriceAsync(string productId, int addedQuantity, decimal newPrice)
+    {
+        FilterDefinition<Product> filter;
+        if (addedQuantity < 0)
+        {
+            filter = Builders<Product>.Filter.And(
+                Builders<Product>.Filter.Eq(p => p.Id, productId),
+                Builders<Product>.Filter.Gte(p => p.Stock, Math.Abs(addedQuantity))
+            );
+        }
+        else
+        {
+            filter = Builders<Product>.Filter.Eq(p => p.Id, productId);
+        }
+
+        var update = Builders<Product>.Update
+            .Inc(p => p.Stock, addedQuantity)
+            .Set(p => p.Price, newPrice)
+            .Set(p => p.UpdatedAt, DateTime.UtcNow);
+
+        var options = new FindOneAndUpdateOptions<Product>
+        {
+            ReturnDocument = ReturnDocument.After
+        };
+
+        return await _products.FindOneAndUpdateAsync(filter, update, options);
+    }
 }

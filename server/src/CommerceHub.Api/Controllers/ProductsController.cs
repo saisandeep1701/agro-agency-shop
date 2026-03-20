@@ -116,4 +116,27 @@ public class ProductsController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpGet("search")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> Search([FromQuery] string name)
+    {
+        var result = await _productService.SearchAsync(name);
+        return Ok(result.Data);
+    }
+
+    [HttpPatch("{id:length(24)}/restock")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> RestockWithPrice(string id, [FromBody] RestockAdjustmentDto request)
+    {
+        var result = await _productService.RestockWithPriceAsync(id, request.AddedQuantity, request.NewPrice);
+        if (!result.Success)
+        {
+            return StatusCode(result.StatusCode, new { error = result.ErrorMessage });
+        }
+        return Ok(result.Data);
+    }
 }
