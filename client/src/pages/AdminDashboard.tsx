@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Product, Order, StockAdjustmentDto } from '../types';
+import { Product, Order } from '../types';
 import { Link } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -148,13 +148,12 @@ const AdminDashboard: React.FC = () => {
     };
 
     const handleDirectRestock = async (productId: string, qty: number) => {
-        const adjustment: StockAdjustmentDto = { productId, quantityToAdjust: qty, reason: "Smart Restock Form" };
         try {
             const token = localStorage.getItem('adminToken');
             const res = await fetch(`${API_BASE_URL}/api/products/${productId}/stock`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify(adjustment)
+                body: JSON.stringify({ adjustment: qty })
             });
             if (res.ok) {
                 alert(`Successfully added ${qty} stock!`);
@@ -166,13 +165,12 @@ const AdminDashboard: React.FC = () => {
     };
 
     const handleRestock = async (productId: string) => {
-        const adjustment: StockAdjustmentDto = { productId, quantityToAdjust: 50, reason: "Admin Restock" };
         try {
             const token = localStorage.getItem('adminToken');
             const response = await fetch(`${API_BASE_URL}/api/products/${productId}/stock`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify(adjustment)
+                body: JSON.stringify({ adjustment: 50 })
             });
 
             if (response.ok) {
