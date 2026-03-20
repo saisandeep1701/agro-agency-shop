@@ -64,7 +64,10 @@ const AdminDashboard: React.FC = () => {
         const delayDebounceFn = setTimeout(async () => {
             setIsSearching(true);
             try {
-                const res = await fetch(`${API_BASE_URL}/api/products/search?name=${encodeURIComponent(searchQuery)}`);
+                const token = localStorage.getItem('adminToken');
+                const res = await fetch(`${API_BASE_URL}/api/products/search?name=${encodeURIComponent(searchQuery)}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
                 if (res.ok) {
                     const data = await res.json();
                     setSearchResults(data);
