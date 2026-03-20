@@ -313,13 +313,14 @@ const AdminDashboard: React.FC = () => {
                                     <div className="list-group position-absolute w-100 shadow-lg mt-1" style={{ zIndex: 1000, maxHeight: '250px', overflowY: 'auto' }}>
                                         {searchResults.map(result => (
                                             <button 
-                                                key={result.id} 
+                                                key={result.id || (result as any)._id} 
                                                 type="button" 
                                                 className="list-group-item list-group-item-action list-group-item-dark border-secondary"
                                                 onClick={() => { 
+                                                    const selectedId = result.id || (result as any)._id;
+                                                    console.log("Selected Product ID:", selectedId);
                                                     console.log("Product Selected:", result);
-                                                    console.log("Current Form State:", { name: result.name, brand: result.brand, techName: result.technicalName, price: result.price, currentStock: result.stock });
-                                                    setSelectedProduct(result); 
+                                                    setSelectedProduct({ ...result, id: selectedId }); 
                                                     setRestockNewPrice(result.price); 
                                                     setSearchQuery(''); 
                                                     setSearchResults([]); 
@@ -343,9 +344,9 @@ const AdminDashboard: React.FC = () => {
 
                             {selectedProduct ? (
                                 <form onSubmit={handleRestockWithPrice}>
-                                    <div className="alert alert-warning bg-transparent border-warning p-3 shadow-lg" style={{ boxShadow: '0 0 15px rgba(255, 193, 7, 0.2)' }}>
+                                    <div className="alert bg-transparent border-dark p-3 shadow-lg" style={{ border: '2px solid black', boxShadow: '0 0 15px rgba(0, 0, 0, 0.4)' }}>
                                         <div className="d-flex justify-content-between align-items-start mb-2">
-                                            <h5 className="text-warning fw-bold mb-0">UPDATE MODE: Restock &amp; Pricing Update</h5>
+                                            <h5 className="text-light fw-bold mb-0">Restock: [{selectedProduct.brand?.toUpperCase()}] {selectedProduct.name}</h5>
                                             <button type="button" className="btn-close btn-close-white" onClick={() => setSelectedProduct(null)} aria-label="Close"></button>
                                         </div>
                                         <div className="mb-1 text-light"><strong>Product:</strong> [{selectedProduct.brand?.toUpperCase()}] {selectedProduct.name}</div>
