@@ -132,7 +132,8 @@ public class ProductRepository : IProductRepository
         var filter = Builders<Product>.Filter.Or(
             Builders<Product>.Filter.Regex(p => p.Name, new MongoDB.Bson.BsonRegularExpression(query, "i")),
             Builders<Product>.Filter.Regex(p => p.Brand, new MongoDB.Bson.BsonRegularExpression(query, "i")),
-            Builders<Product>.Filter.Regex(p => p.Sku, new MongoDB.Bson.BsonRegularExpression(query, "i"))
+            Builders<Product>.Filter.Regex(p => p.Sku, new MongoDB.Bson.BsonRegularExpression(query, "i")),
+            Builders<Product>.Filter.Regex(p => p.TechnicalName, new MongoDB.Bson.BsonRegularExpression(query, "i"))
         );
         return await _products.Find(filter).Limit(30).ToListAsync();
     }
